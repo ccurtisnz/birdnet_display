@@ -20,6 +20,7 @@
         h1, h2 { margin: 0; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 2px 2px 6px rgba(0,0,0,0.7); }
         .time-display { font-size: 1.1em; color: #e2e8f0; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 1px 1px 4px rgba(0,0,0,0.7); }
         .side-card .time-display { font-size: 0.9em; }
+        .detections-count { font-size: 0.9em; color: #facc15; margin: 2px 0 0 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.6); }
         .copyright-display { font-size: 0.8em; color: #cbd5e1; }
         .pin-icon-container { position: absolute; top: 0; right: 0; z-index: 3; width: 56px; height: 56px; overflow: hidden; }
         .pin-icon { position: absolute; top: 0; right: 0; width: 0; height: 0; border-style: solid; border-width: 0 56px 56px 0; border-color: transparent #f97316 transparent transparent; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.8)); }
@@ -86,7 +87,19 @@
         #confirmBtn, #cancelBtn { padding: 10px 25px; font-size: 1em; border-radius: 8px; border: none; cursor: pointer; }
         #cancelBtn { background-color: #e2e8f0; }
         #confirmBtn { background-color: #dc2626; color: white; }
-        input[type="range"] { width: 100%; height: 15px; -webkit-appearance: none; background: #e2e8f0; border-radius: 8px; outline: none; }
+        #setupModal { z-index: 1300; }
+        #setupModal .modal-content { width: 420px; max-width: 92vw; text-align: left; }
+        #setupModal h2 { margin-bottom: 10px; }
+        #setup-form input[type="text"] { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1em; }
+        #setup-error { color: #dc2626; min-height: 1.2em; font-size: 0.95em; margin-top: 8px; }
+        .setup-actions { margin-top: 15px; }
+        #setup-submit-btn { width: 100%; }
+        .setup-qr { margin-top: 18px; padding: 12px; background: #f8fafc; border-radius: 10px; text-align: center; border: 1px dashed #cbd5e1; }
+        .setup-qr img { width: 160px; height: 160px; object-fit: contain; margin-bottom: 8px; }
+        .setup-qr small { display: block; color: #475569; margin-bottom: 4px; }
+        .setup-qr-code-text { font-family: 'Courier New', Courier, monospace; font-size: 0.9em; color: #0f172a; word-break: break-all; }
+        .modal-content p.helper-text { font-size: 0.95em; color: #475569; margin-bottom: 12px; }
+        input[type="range"] { width: 100%; height: 15px; appearance: none; -webkit-appearance: none; background: #e2e8f0; border-radius: 8px; outline: none; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 30px; height: 30px; background: #3b82f6; cursor: pointer; border-radius: 50%; }
         input[type="range"]::-moz-range-thumb { width: 30px; height: 30px; background: #3b82f6; cursor: pointer; border-radius: 50%; border: none; }
         .pinned-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 8px; background-color: #f8fafc; border-radius: 8px; }
@@ -95,9 +108,75 @@
         .dismiss-btn { padding: 6px 12px; font-size: 0.9em; background-color: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer; }
         .dismiss-btn:hover { background-color: #b91c1c; }
         #pinned-species-list:empty::before { content: 'No pinned species'; color: #94a3b8; font-style: italic; display: block; padding: 10px; }
+        #loading-overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, rgba(15,23,42,0.92), rgba(15,23,42,0.98)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; z-index: 900; transition: opacity 0.4s ease; pointer-events: none; }
+        #loading-overlay.hidden { opacity: 0; }
+        .bird-loader { position: relative; width: 90px; height: 80px; }
+        .bird-body { position: absolute; bottom: 18px; left: 20px; width: 52px; height: 40px; background: #f97316; border-radius: 55% 45% 40% 50%; animation: hop 1s ease-in-out infinite; }
+        .bird-wing { position: absolute; top: 18px; left: 30px; width: 28px; height: 18px; background: #fb923c; border-radius: 50%; animation: flap 1s ease-in-out infinite; }
+        .bird-eye { position: absolute; top: 14px; left: 42px; width: 8px; height: 8px; background: #fff; border-radius: 50%; animation: blink 3s infinite; }
+        .bird-eye::after { content: ''; display: block; width: 4px; height: 4px; background: #0f172a; border-radius: 50%; margin: 2px auto; }
+        .bird-beak { position: absolute; top: 22px; right: 8px; width: 0; height: 0; border-left: 8px solid #fbbf24; border-top: 6px solid transparent; border-bottom: 6px solid transparent; animation: hop 1s ease-in-out infinite; }
+        .bird-feet { position: absolute; bottom: 8px; left: 30px; width: 34px; display: flex; justify-content: space-between; }
+        .bird-feet span { width: 6px; height: 14px; background: #fbbf24; border-radius: 3px; transform-origin: top center; animation: feet 1s ease-in-out infinite; }
+        .bird-feet span:nth-child(2) { animation-delay: 0.1s; }
+        .bird-shadow { position: absolute; bottom: 0; left: 24px; width: 42px; height: 10px; background: rgba(0,0,0,0.35); border-radius: 50%; animation: shadow 1s ease-in-out infinite; }
+        #loading-overlay p { font-size: 1.1em; letter-spacing: 0.1em; text-transform: uppercase; color: #e2e8f0; }
+        @keyframes hop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        @keyframes flap { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }
+        @keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 94% { transform: scaleY(0.2); } }
+        @keyframes feet { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(8deg); } }
+        @keyframes shadow { 0%, 100% { transform: scale(1); opacity: 0.35; } 50% { transform: scale(0.8); opacity: 0.5; } }
     </style>
 </head>
 <body class="">
+
+    {% macro render_card(idx, variant) %}
+        {% set has_source = birds is defined and birds and (birds|length > idx) %}
+        {% set card_bird = birds[idx] if has_source else none %}
+        {% set has_bird = card_bird is not none %}
+        {% set card_class = 'main-card' if variant == 'main' else 'side-card' %}
+        <div id="card-{{ idx }}" class="detection-card {{ card_class }}"{% if not has_bird %} style="display:none;"{% endif %}>
+            <div id="card-bg-{{ idx }}" class="card-background" style="background-image: {% if has_bird %}url('{{ card_bird.image_url }}'){% else %}none{% endif %};"></div>
+            <img id="img-{{ idx }}" class="bird-image" src="{% if has_bird %}{{ card_bird.image_url }}{% endif %}" alt="Image of bird">
+            <div class="card-content-overlay">
+                <div>
+                    {% if card_class == 'main-card' %}
+                        <h1 id="name-{{ idx }}">{% if has_bird %}{{ card_bird.name }}{% endif %}</h1>
+                    {% else %}
+                        <h2 id="name-{{ idx }}">{% if has_bird %}{{ card_bird.name }}{% endif %}</h2>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <div class="footer-text">
+                        <p id="time-{{ idx }}" class="time-display">{% if has_bird %}{{ card_bird.time_display }}{% endif %}</p>
+                        <p id="detections-{{ idx }}" class="detections-count">
+                            {% if has_bird and card_bird.detections_today is not none %}
+                                {{ card_bird.detections_today }} detection{% if card_bird.detections_today != 1 %}s{% endif %} today
+                            {% else %}
+                                &nbsp;
+                            {% endif %}
+                        </p>
+                        <p id="copyright-{{ idx }}" class="copyright-display">{% if has_bird and card_bird.copyright %}{{ card_bird.copyright }}{% endif %}</p>
+                    </div>
+                    <div class="footer-right">
+                        <div id="confidence-container-{{ idx }}" class="confidence-circle-container" data-confidence="{% if has_bird %}{{ card_bird.confidence_value }}{% else %}0{% endif %}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endmacro %}
+
+    <div id="loading-overlay">
+        <div class="bird-loader">
+            <div class="bird-shadow"></div>
+            <div class="bird-body"></div>
+            <div class="bird-wing"></div>
+            <div class="bird-eye"></div>
+            <div class="bird-beak"></div>
+            <div class="bird-feet"><span></span><span></span></div>
+        </div>
+        <p>Spotting birds...</p>
+    </div>
 
     <div id="settings-overlay">
         <div id="settings-menu">
@@ -109,80 +188,31 @@
 
     <div class="main-layout">
         <div class="left-column">
-            {% if birds and birds[0] %}
-            <div id="card-0" class="detection-card main-card">
-                <div id="card-bg-0" class="card-background" style="background-image: url('{{ birds[0].image_url }}');"></div>
-                <img id="img-0" class="bird-image" src="{{ birds[0].image_url }}" alt="Image of bird">
-                <div class="card-content-overlay">
-                    <div><h1 id="name-0">{{ birds[0].name }}</h1></div>
-                    <div class="card-footer">
-                        <div class="footer-text">
-                            <p id="time-0" class="time-display">{{ birds[0].time_display }}</p>
-                            <p id="copyright-0" class="copyright-display"></p>
-                        </div>
-                        <div class="footer-right">
-                            <div id="confidence-container-0" class="confidence-circle-container" data-confidence="{{ birds[0].confidence_value }}"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
+            {{ render_card(0, 'main') }}
         </div>
         <div class="right-column">
-            {% if birds and birds[1] %}
-            <div id="card-1" class="detection-card side-card">
-                <div id="card-bg-1" class="card-background" style="background-image: url('{{ birds[1].image_url }}');"></div>
-                <img id="img-1" class="bird-image" src="{{ birds[1].image_url }}" alt="Image of bird">
-                <div class="card-content-overlay">
-                    <div><h2 id="name-1">{{ birds[1].name }}</h2></div>
-                    <div class="card-footer">
-                        <div class="footer-text">
-                            <p id="time-1" class="time-display">{{ birds[1].time_display }}</p>
-                            <p id="copyright-1" class="copyright-display"></p>
-                        </div>
-                        <div class="footer-right">
-                            <div id="confidence-container-1" class="confidence-circle-container" data-confidence="{{ birds[1].confidence_value }}"></div>
-                        </div>
-                    </div>
+            {{ render_card(1, 'side') }}
+            {{ render_card(2, 'side') }}
+            {{ render_card(3, 'side') }}
+        </div>
+    </div>
+
+    <div id="setupModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Connect to BirdNET-Pi</h2>
+            <p class="helper-text">Enter the base URL of your BirdNET-Pi device so we can load detections.</p>
+            <form id="setup-form">
+                <input type="text" id="base-url-input" name="base-url" placeholder="http://192.168.88.58" autocomplete="off" required>
+                <p id="setup-error"></p>
+                <div class="setup-actions">
+                    <button type="submit" id="setup-submit-btn" class="settings-btn">Save &amp; Refresh</button>
                 </div>
+            </form>
+            <div class="setup-qr">
+                <small>Need a keyboard? Scan to open this page on your phone.</small>
+                <img src="/qr_setup.png" alt="Scan to configure">
+                <span class="setup-qr-code-text">{{ display_url }}</span>
             </div>
-            {% endif %}
-            {% if birds and birds[2] %}
-            <div id="card-2" class="detection-card side-card">
-                <div id="card-bg-2" class="card-background" style="background-image: url('{{ birds[2].image_url }}');"></div>
-                <img id="img-2" class="bird-image" src="{{ birds[2].image_url }}" alt="Image of bird">
-                <div class="card-content-overlay">
-                    <div><h2 id="name-2">{{ birds[2].name }}</h2></div>
-                    <div class="card-footer">
-                        <div class="footer-text">
-                            <p id="time-2" class="time-display">{{ birds[2].time_display }}</p>
-                            <p id="copyright-2" class="copyright-display"></p>
-                        </div>
-                        <div class="footer-right">
-                            <div id="confidence-container-2" class="confidence-circle-container" data-confidence="{{ birds[2].confidence_value }}"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-            {% if birds and birds[3] %}
-            <div id="card-3" class="detection-card side-card">
-                 <div id="card-bg-3" class="card-background" style="background-image: url('{{ birds[3].image_url }}');"></div>
-                <img id="img-3" class="bird-image" src="{{ birds[3].image_url }}" alt="Image of bird">
-                <div class="card-content-overlay">
-                    <div><h2 id="name-3">{{ birds[3].name }}</h2></div>
-                    <div class="card-footer">
-                        <div class="footer-text">
-                            <p id="time-3" class="time-display">{{ birds[3].time_display }}</p>
-                            <p id="copyright-3" class="copyright-display"></p>
-                        </div>
-                        <div class="footer-right">
-                            <div id="confidence-container-3" class="confidence-circle-container" data-confidence="{{ birds[3].confidence_value }}"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
         </div>
     </div>
 
@@ -242,6 +272,89 @@
         document.addEventListener('DOMContentLoaded', function() {
             // --- LAYOUT LOGIC ---
             const savedLayout = localStorage.getItem('birdLayout') || '3';
+            const serverRequiresSetup = {{ requires_setup | default(false) | tojson }};
+            let requiresSetup = serverRequiresSetup;
+            const loadingOverlay = document.getElementById('loading-overlay');
+            let loadingActive = true;
+            function hideLoadingOverlay() {
+                if (!loadingActive || !loadingOverlay) { return; }
+                loadingOverlay.classList.add('hidden');
+                loadingActive = false;
+                setTimeout(() => {
+                    if (loadingOverlay && loadingOverlay.parentElement) {
+                        loadingOverlay.parentElement.removeChild(loadingOverlay);
+                    }
+                }, 500);
+            }
+
+            const setupModal = document.getElementById('setupModal');
+            const setupForm = document.getElementById('setup-form');
+            const baseUrlInput = document.getElementById('base-url-input');
+            const setupError = document.getElementById('setup-error');
+            const setupSubmitBtn = document.getElementById('setup-submit-btn');
+            let setupSubmitInProgress = false;
+
+            function showSetupModal() {
+                if (!setupModal) { return; }
+                setupModal.style.display = 'flex';
+                setTimeout(() => {
+                    if (baseUrlInput) { baseUrlInput.focus(); }
+                }, 0);
+            }
+
+            function hideSetupModal() {
+                if (!setupModal) { return; }
+                setupModal.style.display = 'none';
+                if (setupError) { setupError.textContent = ''; }
+            }
+
+            if (setupForm) {
+                setupForm.addEventListener('submit', async event => {
+                    event.preventDefault();
+                    if (setupSubmitInProgress) { return; }
+                    const enteredUrl = baseUrlInput ? baseUrlInput.value.trim() : '';
+                    if (!enteredUrl) {
+                        if (setupError) { setupError.textContent = 'Base URL is required.'; }
+                        return;
+                    }
+                    setupSubmitInProgress = true;
+                    if (setupError) { setupError.textContent = ''; }
+                    if (setupSubmitBtn) {
+                        setupSubmitBtn.disabled = true;
+                        setupSubmitBtn.textContent = 'Saving...';
+                    }
+                    try {
+                        const response = await fetch('/api/config/base_url', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ base_url: enteredUrl })
+                        });
+                        const result = await response.json();
+                        if (!response.ok || result.status !== 'success') {
+                            throw new Error(result.message || 'Failed to save base URL.');
+                        }
+                        requiresSetup = false;
+                        hideSetupModal();
+                        if (baseUrlInput) { baseUrlInput.value = ''; }
+                        requestDataRefresh(true, { immediate: true, force: true });
+                    } catch (error) {
+                        if (setupError) { setupError.textContent = error.message || 'Failed to save base URL.'; }
+                    } finally {
+                        setupSubmitInProgress = false;
+                        if (setupSubmitBtn) {
+                            setupSubmitBtn.disabled = false;
+                            setupSubmitBtn.textContent = 'Save & Refresh';
+                        }
+                    }
+                });
+            }
+
+            function formatDetectionCount(count) {
+                if (!Number.isFinite(count) || count <= 0) {
+                    return 'No detections today';
+                }
+                return count === 1 ? '1 detection today' : `${count} detections today`;
+            }
             
             function applyLayout(layout) {
                 document.body.className = `layout-${layout}`;
@@ -373,7 +486,7 @@
                                 const response = await fetch(`/api/dismiss_pinned/${encodeURIComponent(speciesName)}`, { method: 'POST' });
                                 if (response.ok) {
                                     await loadPinnedSpecies(); // Reload the list
-                                    await fetchAndUpdate(); // Refresh the main display
+                                    await requestDataRefresh(true, { immediate: true }); // Refresh the main display from top
                                 }
                             } catch (error) {
                                 console.error('Error dismissing pinned species:', error);
@@ -391,7 +504,7 @@
                     const response = await fetch('/api/dismiss_all_pinned', { method: 'POST' });
                     if (response.ok) {
                         await loadPinnedSpecies(); // Reload the list
-                        await fetchAndUpdate(); // Refresh the main display
+                        await requestDataRefresh(true, { immediate: true }); // Refresh the main display from top
                     }
                 } catch (error) {
                     console.error('Error dismissing all pinned species:', error);
@@ -400,6 +513,29 @@
 
             // --- DYNAMIC DATA REFRESH LOGIC ---
             const refreshIntervalMs = {{ refresh_interval * 1000 }};
+            const initialConfigVersion = {{ config_version | default(0) | tojson }};
+            const CAROUSEL_INTERVAL_MS = 8000;
+            const MAX_CARD_SLOTS = 4;
+            const DEFAULT_CHUNK_SIZE = 3;
+            const initialBirds = {{ birds | default([]) | tojson | safe }};
+            let allBirds = Array.isArray(initialBirds) ? [...initialBirds] : [];
+            let birdChunks = [];
+            let chunkIndex = 0;
+            let carouselIntervalId = null;
+            const DATA_FETCH_TIMEOUT_MS = Math.max(8000, Math.floor(refreshIntervalMs * 1.5));
+            const FAILED_REFRESH_DELAY_MS = Math.min(20000, Math.max(5000, refreshIntervalMs));
+            let refreshQueue = Promise.resolve();
+            let dataRefreshTimerId = null;
+            let pendingCycleRefresh = false;
+            let currentConfigVersion = Number(initialConfigVersion) || 0;
+
+            function handleConfigVersion(serverVersion) {
+                const parsedVersion = Number(serverVersion);
+                if (Number.isFinite(parsedVersion) && parsedVersion > currentConfigVersion) {
+                    currentConfigVersion = parsedVersion;
+                    window.location.reload();
+                }
+            }
 
             function updateConfidenceCircle(index, confidence) {
                 const container = document.getElementById(`confidence-container-${index}`);
@@ -422,11 +558,10 @@
             function updateCard(index, bird) {
                 const card = document.getElementById(`card-${index}`);
                 if (!card) return;
+                card.style.display = bird ? '' : 'none';
                 if (!bird) {
-                    card.style.display = 'none';
                     return;
                 }
-                card.style.display = '';
 
                 const mainImage = document.getElementById(`img-${index}`);
                 const bgImage = document.getElementById(`card-bg-${index}`);
@@ -446,6 +581,10 @@
                 }
                 document.getElementById(`name-${index}`).textContent = bird.name;
                 document.getElementById(`time-${index}`).textContent = bird.time_display;
+                const detectionElem = document.getElementById(`detections-${index}`);
+                if (detectionElem) {
+                    detectionElem.textContent = formatDetectionCount(Number(bird.detections_today || 0));
+                }
                 const copyrightElem = document.getElementById(`copyright-${index}`);
                 if (bird.copyright && bird.copyright.trim() !== "") {
                     copyrightElem.textContent = bird.copyright;
@@ -489,13 +628,158 @@
                 }
             }
 
-            async function fetchAndUpdate() {
+            function getVisibleSlotCount(){
+                switch (savedLayout) {
+                    case '1': return 1;
+                    case '3': return 3;
+                    case '4e':
+                    case '4g': return 4;
+                    default: return 3;
+                }
+            }
+
+            function getChunkSize() {
+                const slotCount = getVisibleSlotCount() || DEFAULT_CHUNK_SIZE;
+                return Math.min(Math.max(slotCount, 1), MAX_CARD_SLOTS);
+            }
+
+            function recomputeChunks() {
+                birdChunks = [];
+                const chunkSize = getChunkSize();
+                if (!allBirds.length || chunkSize <= 0) { return; }
+                for (let i = 0; i < allBirds.length; i += chunkSize) {
+                    birdChunks.push(allBirds.slice(i, i + chunkSize));
+                }
+                if (chunkIndex >= birdChunks.length) {
+                    chunkIndex = 0;
+                }
+            }
+
+            function renderCarouselSlice() {
+                const visibleSlots = getVisibleSlotCount();
+                const activeChunk = birdChunks.length ? birdChunks[chunkIndex] : [];
+                for (let i = 0; i < MAX_CARD_SLOTS; i++) {
+                    let bird = null;
+                    if (i < visibleSlots && i < activeChunk.length) {
+                        bird = activeChunk[i];
+                    }
+                    updateCard(i, bird);
+                }
+            }
+
+            function advanceCarousel() {
+                const shouldRequestCycleRefresh =
+                    birdChunks.length > 0 &&
+                    chunkIndex === birdChunks.length - 1 &&
+                    !pendingCycleRefresh;
+
+                if (shouldRequestCycleRefresh) {
+                    requestDataRefresh(true, { immediate: true, markCycleRefresh: true, force: true });
+                }
+
+                if (birdChunks.length <= 1) { return; }
+                chunkIndex = (chunkIndex + 1) % birdChunks.length;
+                renderCarouselSlice();
+            }
+
+            function scheduleCarousel() {
+                if (carouselIntervalId) {
+                    clearInterval(carouselIntervalId);
+                    carouselIntervalId = null;
+                }
+                if (birdChunks.length <= 1) { return; }
+                carouselIntervalId = setInterval(advanceCarousel, CAROUSEL_INTERVAL_MS);
+            }
+
+            function scheduleDataRefresh(delay = refreshIntervalMs) {
+                if (dataRefreshTimerId) {
+                    clearTimeout(dataRefreshTimerId);
+                }
+                dataRefreshTimerId = setTimeout(() => {
+                    requestDataRefresh(false);
+                }, delay);
+            }
+
+            function requestDataRefresh(resetCarousel = false, options = {}) {
+                const { immediate = false, markCycleRefresh = false, force = false } = options;
+                if (immediate && dataRefreshTimerId) {
+                    clearTimeout(dataRefreshTimerId);
+                    dataRefreshTimerId = null;
+                }
+                if (markCycleRefresh) {
+                    pendingCycleRefresh = true;
+                }
+                const shouldForceFetch = force || markCycleRefresh;
+                refreshQueue = refreshQueue
+                    .then(() => fetchAndUpdate(resetCarousel, shouldForceFetch))
+                    .catch(error => {
+                        console.error('Error during queued refresh:', error);
+                    });
+                return refreshQueue;
+            }
+
+            async function fetchWithTimeout(resource, options = {}, timeoutMs = DATA_FETCH_TIMEOUT_MS) {
+                if (typeof AbortController === 'undefined' || !timeoutMs) {
+                    return fetch(resource, options);
+                }
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
                 try {
-                    const response = await fetch('/data');
-                    if (!response.ok) { console.error("Failed to fetch data, status:", response.status); return; }
+                    return await fetch(resource, { ...options, signal: controller.signal });
+                } finally {
+                    clearTimeout(timeoutId);
+                }
+            }
+
+            async function fetchAndUpdate(resetCarousel = false, forceFetch = false) {
+                let nextDelay = refreshIntervalMs;
+                try {
+                    const endpoint = forceFetch ? '/data?force=1' : '/data';
+                    const response = await fetchWithTimeout(endpoint);
+                    if (!response.ok) {
+                        console.error("Failed to fetch data, status:", response.status);
+                        nextDelay = FAILED_REFRESH_DELAY_MS;
+                        return;
+                    }
                     const data = await response.json();
-                    for (let i = 0; i < 4; i++) { updateCard(i, data.birds[i]); }
-                } catch (error) { console.error("Error fetching update:", error); }
+                    handleConfigVersion(data.config_version);
+                    if (data.requires_setup) {
+                        if (!requiresSetup) {
+                            requiresSetup = true;
+                        }
+                        hideLoadingOverlay();
+                        showSetupModal();
+                        allBirds = [];
+                        recomputeChunks();
+                        renderCarouselSlice();
+                        scheduleCarousel();
+                        return;
+                    }
+                    if (requiresSetup) {
+                        requiresSetup = false;
+                        hideSetupModal();
+                    }
+                    allBirds = Array.isArray(data.birds) ? data.birds : [];
+                    recomputeChunks();
+                    if (!birdChunks.length || resetCarousel || chunkIndex >= birdChunks.length) {
+                        chunkIndex = 0;
+                    }
+                    renderCarouselSlice();
+                    scheduleCarousel();
+                    if (allBirds.length) {
+                        hideLoadingOverlay();
+                    }
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        console.warn('Data refresh aborted due to timeout.');
+                    } else {
+                        console.error("Error fetching update:", error);
+                    }
+                    nextDelay = FAILED_REFRESH_DELAY_MS;
+                } finally {
+                    pendingCycleRefresh = false;
+                    scheduleDataRefresh(nextDelay);
+                }
             }
 
             // Initial setup for circles and copyright that were rendered by the server
@@ -507,7 +791,7 @@
                         updateConfidenceCircle({{ i }}, {{ birds[i].confidence_value }});
                     {% endif %}
                     const copyrightElem{{ i }} = document.getElementById('copyright-{{ i }}');
-                    const copyrightText{{ i }} = "{{ birds[i].copyright }}";
+                    const copyrightText{{ i }} = {{ birds[i].copyright | tojson }};
                     if (copyrightText{{ i }} && copyrightText{{ i }}.trim() !== "") {
                         copyrightElem{{ i }}.textContent = copyrightText{{ i }};
                         copyrightElem{{ i }}.style.display = "block";
@@ -517,9 +801,19 @@
                 {% endif %}
             {% endfor %}
             
-            checkAudioStatus();
-            setInterval(checkAudioStatus, 5000);
-            setInterval(fetchAndUpdate, refreshIntervalMs);
+            recomputeChunks();
+            renderCarouselSlice();
+            scheduleCarousel();
+            if (allBirds.length) {
+                hideLoadingOverlay();
+            }
+            // Temporarily disable microphone status polling to avoid `/audio_status` requests.
+            // checkAudioStatus();
+            // setInterval(checkAudioStatus, 5000);
+            if (requiresSetup) {
+                showSetupModal();
+            }
+            requestDataRefresh(false, { immediate: true });
         });
     </script>
 </body>

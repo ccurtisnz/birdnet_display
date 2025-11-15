@@ -30,5 +30,11 @@ MANIFEST
 # Claude Code
 .claude/
 
+# Local virtual environments
+.venv/
+
 # Ignore static bird images cache
 static/bird_images_cache/
+
+#Ignore notes
+notes.txt
